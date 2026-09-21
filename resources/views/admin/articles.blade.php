@@ -1,0 +1,7 @@
+@extends('layout')
+@section('title','Berita')
+@section('content')
+<div class="page-heading"><div><span class="eyebrow">RUANG CERITA</span><h1>{{ auth()->user()->role==='writer'?'Berita saya':'Kelola berita' }}</h1><p>Tulis dan langsung publikasikan cerita Anda.</p></div><a class="button" href="/manage/articles/create">＋ Tulis berita</a></div>
+<div class="panel table-wrap"><table><thead><tr><th>Judul berita</th><th>Penulis</th><th>Dibaca</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody>@forelse($articles as $a)<tr><td><a href="/blog/{{ $a->slug }}"><strong>{{ $a->title }}</strong></a><small>{{ $a->category }}</small></td><td>{{ $a->author->name }}</td><td>{{ $a->views }}</td><td>{{ $a->created_at->format('d M Y') }}</td><td><div class="row-actions"><a href="/blog/{{ $a->slug }}" target="_blank" rel="noopener" aria-label="Lihat halaman berita {{ $a->title }}">Lihat halaman ↗</a><a href="/manage/articles/{{ $a->id }}/edit">Edit</a>@if(auth()->user()->isStaff())<form method="post" action="/manage/articles/{{ $a->id }}" data-confirm="Hapus berita ini dari website?">@csrf @method('DELETE')<button class="text-button danger">Hapus</button></form>@endif</div></td></tr>@empty<tr><td colspan="5" class="empty">Belum ada berita. Mulai tulis cerita pertama Anda.</td></tr>@endforelse</tbody></table>@include('components.pager',['paginator'=>$articles])</div><p class="muted">Jumlah dibaca menghitung kunjungan halaman, termasuk kunjungan ulang.</p>
+@endsection
+

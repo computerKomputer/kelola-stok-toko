@@ -1,0 +1,11 @@
+@extends('layout')
+@section('title',auth()->user()->isOwner()?'Pembelian':'Penerimaan barang')
+@section('content')
+<div class="page-heading"><div><span class="eyebrow">BARANG MASUK</span><h1>{{ auth()->user()->isOwner()?'Pembelian':'Penerimaan barang' }}</h1><p>Catat jumlah barang layak jual yang benar-benar diterima.</p></div>@can('owner')<a href="/manage/purchases/create" class="button">＋ Buat pembelian</a>@endcan</div>
+@forelse($purchases as $purchase)<section class="panel"><div class="panel-heading"><div><h2>{{ $purchase->number }}</h2><p class="muted">{{ $purchase->created_at->format('d M Y') }}</p></div>@include('orders.status',['status'=>$purchase->status])</div>
+@can('owner')<div class="owner-info"><strong>{{ $purchase->supplier->name }}</strong><p>Total pembelian: @rupiah($purchase->items->sum(fn($i)=>$i->unit_cost*$i->quantity)+$purchase->extra_cost) · Biaya tambahan: @rupiah($purchase->extra_cost)</p><p>{{ $purchase->note }}</p></div>@endcan
+<form method="post" action="/manage/purchases/{{ $purchase->id }}/receive">@csrf<input type="hidden" name="receipt_token" value="{{ (string) Illuminate\Support\Str::uuid() }}"><div class="table-wrap"><table><thead><tr><th>Produk</th><th>Dipesan</th><th>Sudah diterima</th>@can('owner')<th>Harga beli / unit</th>@endcan<th>Terima sekarang</th></tr></thead><tbody>@foreach($purchase->items as $i)<tr><td>{{ $i->product->name }}</td><td>{{ $i->quantity }}</td><td>{{ $i->received }}</td>@can('owner')<td>@rupiah($i->unit_cost)</td>@endcan<td>@if($i->quantity>$i->received)<input type="number" aria-label="Jumlah diterima untuk {{ $i->product->name }}" name="quantities[{{ $i->id }}]" min="0" max="{{ $i->quantity-$i->received }}" value="0">@else<span class="badge">Lengkap ✓</span>@endif</td></tr>@endforeach</tbody></table></div>@if($purchase->status!=='received')<div class="form-footer"><small class="muted">Barang rusak atau belum datang tidak dihitung sebagai stok masuk.</small><button>Simpan penerimaan ↙</button></div>@endif</form></section>@empty<div class="panel empty"><h2>Belum ada pembelian</h2><p>Owner dapat membuat pembelian untuk mulai mencatat penerimaan.</p></div>@endforelse
+@include('components.pager',['paginator'=>$purchases])
+@endsection
+
+

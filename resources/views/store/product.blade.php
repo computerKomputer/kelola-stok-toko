@@ -1,0 +1,9 @@
+@extends('layout')
+@section('title',$product->name)
+@section('content')
+<p class="breadcrumb"><a href="/products">Koleksi produk</a> / {{ $product->name }}</p>
+<div class="product-detail"><div class="product-gallery"><div class="detail-visual tone-{{ $product->id%4 }}"><img id="product-gallery-main" src="{{ $product->gallery[0]['url'] }}" alt="{{ $product->name }} — {{ $product->gallery[0]['label'] }}"></div>@if(count($product->gallery)>1)<div class="product-gallery-thumbs" aria-label="Sudut foto produk">@foreach($product->gallery as $photo)<button type="button" class="product-gallery-thumb {{ $loop->first?'selected':'' }}" data-gallery-url="{{ $photo['url'] }}" data-gallery-alt="{{ $product->name }} — {{ $photo['label'] }}" aria-label="Lihat {{ $photo['label'] }}" aria-pressed="{{ $loop->first?'true':'false' }}"><img src="{{ $photo['url'] }}" alt=""></button>@endforeach</div>@endif</div><section><span class="eyebrow">{{ $product->category }}</span><h1>{{ $product->name }}</h1><div class="detail-price">@rupiah($product->sale_price) @if($product->discount)<del>@rupiah($product->price)</del><span class="badge">Hemat {{ $product->discount }}%</span>@endif</div><p class="availability">{{ $product->available_stock?'● Stok tersedia':'Stok habis' }}</p><p class="preserve-lines">{{ $product->description }}</p><hr><small class="muted">SKU: {{ $product->sku }}</small>
+@guest<a href="/login" class="button full">Masuk untuk belanja →</a>@else @if(auth()->user()->role==='customer')<form action="/cart/{{ $product->id }}" method="post" class="buy-form">@csrf<label>Jumlah<input type="number" name="quantity" value="1" min="1" max="{{ min($product->available_stock,1000) }}" required></label><button @disabled(!$product->available_stock)>Tambahkan ke keranjang ＋</button></form>@else<a href="/dashboard" class="button secondary full">Buka dashboard</a>@endif @endguest
+<p class="muted">Pembayaran saat barang diterima (COD).</p></section></div>
+@endsection
+

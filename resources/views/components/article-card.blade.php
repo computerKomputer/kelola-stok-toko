@@ -1,0 +1,2 @@
+<article class="article-card"><a href="/blog/{{ $article->slug }}" class="article-image">@if($article->image)<img src="/media/{{ $article->image }}" alt="{{ $article->title }}" loading="lazy">@else<img src="/illustrations/computer-story.svg" alt="" loading="lazy">@endif</a><small>{{ $article->category }} · {{ $article->created_at->format('d M Y') }}</small><a href="/blog/{{ $article->slug }}"><h3>{{ $article->title }}</h3></a><p>{{ $article->excerpt }}</p><a class="text-link" href="/blog/{{ $article->slug }}">Baca cerita →</a></article>
+

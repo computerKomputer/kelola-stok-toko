@@ -1,0 +1,92 @@
+<?php
+use Illuminate\Support\Facades\{Route,Storage};
+use App\Http\Controllers\{AuthController,StoreController,AdminController,PurchaseController,ArticleController,UserController};
+Route::get('/',[StoreController::class,'home'])->name('home');
+Route::get('/products',[StoreController::class,'products']);
+Route::get('/products/{product}',[StoreController::class,'product']);
+Route::get('/blog',[StoreController::class,'articles']);
+Route::get('/blog/{article:slug}',[StoreController::class,'article']);
+Route::get('/authors/{user}',[StoreController::class,'author']);
+Route::get('/media/{folder}/{file}',function(string $folder,string $file){
+ abort_unless(in_array($folder,['products','articles'],true) && preg_match('/^[A-Za-z0-9_-]+\.(jpg|jpeg|png|webp)$/i',$file),404);
+ abort_unless(Storage::disk('public')->exists("$folder/$file"),404);
+ return response()->file(Storage::disk('public')->path("$folder/$file"),['X-Content-Type-Options'=>'nosniff']);
+});
+Route::middleware('guest')->group(function(){
+ Route::get('/login',[AuthController::class,'form'])->name('login');
+ Route::post('/login',[AuthController::class,'login'])->middleware('throttle:20,1');
+ Route::get('/register',[AuthController::class,'registerForm']);
+ Route::post('/register',[AuthController::class,'register'])->middleware('throttle:5,1');
+});
+Route::middleware('auth')->group(function(){
+ Route::post('/logout',[AuthController::class,'logout']);
+ Route::get('/profile',[AuthController::class,'profile']);
+ Route::put('/profile',[AuthController::class,'updateProfile']);
+ Route::get('/dashboard',[AdminController::class,'dashboard']);
+ Route::get('/orders/{order}',[StoreController::class,'order'])->middleware('role:customer,admin,owner');
+ Route::middleware('role:customer')->group(function(){
+  Route::get('/orders',[StoreController::class,'orders']);
+  Route::get('/cart',[StoreController::class,'cart']);
+  Route::post('/cart/{product}',[StoreController::class,'add']);
+  Route::put('/cart/{product}',[StoreController::class,'updateCart']);
+  Route::post('/checkout',[StoreController::class,'checkout']);
+ });
+ Route::prefix('manage')->group(function(){
+  Route::middleware('role:writer,admin,owner')->group(function(){
+   Route::get('/articles',[ArticleController::class,'index']);
+   Route::get('/articles/create',[ArticleController::class,'form']);
+   Route::post('/articles',[ArticleController::class,'save']);
+   Route::get('/articles/{article}/edit',[ArticleController::class,'form']);
+   Route::put('/articles/{article}',[ArticleController::class,'save']);
+  });
+  Route::middleware('role:admin,owner')->group(function(){
+   Route::get('/expenses',[\App\Http\Controllers\ExpenseController::class,'index']);
+   Route::get('/expenses/create',[\App\Http\Controllers\ExpenseController::class,'create']);
+   Route::post('/expenses',[\App\Http\Controllers\ExpenseController::class,'store']);
+   Route::get('/product-categories',[\App\Http\Controllers\ProductCategoryController::class,'index']);
+   Route::post('/product-categories',[\App\Http\Controllers\ProductCategoryController::class,'store']);
+   Route::delete('/product-categories/{productCategory}',[\App\Http\Controllers\ProductCategoryController::class,'destroy']);
+   Route::delete('/articles/{article}',[ArticleController::class,'delete']);
+   Route::get('/categories',[ArticleController::class,'categories']);
+   Route::post('/categories',[ArticleController::class,'saveCategory']);
+   Route::delete('/categories/{category}',[ArticleController::class,'deleteCategory']);
+   Route::get('/products',[AdminController::class,'products']);
+   Route::get('/products/create',[AdminController::class,'productForm']);
+   Route::post('/products',[AdminController::class,'saveProduct']);
+   Route::get('/products/{product}/edit',[AdminController::class,'productForm']);
+   Route::put('/products/{product}',[AdminController::class,'saveProduct']);
+   Route::delete('/products/{product}',[AdminController::class,'deactivate']);
+   Route::get('/stock',[AdminController::class,'stock']);
+   Route::get('/stock/{product}/edit',[AdminController::class,'stockForm']);
+   Route::put('/stock/{product}',[AdminController::class,'saveStock']);
+   Route::post('/stock/adjust',[AdminController::class,'adjust']);
+   Route::get('/orders',[AdminController::class,'orders']);
+   Route::put('/orders/{order}/status',[AdminController::class,'transition']);
+   Route::post('/orders/{order}/cancel-staged',[\App\Http\Controllers\StagedSaleController::class,'cancel']);
+   Route::post('/orders/{order}/payments',[\App\Http\Controllers\StagedSaleController::class,'pay']);
+   Route::post('/orders/{order}/fulfill',[\App\Http\Controllers\StagedSaleController::class,'fulfill']);
+   Route::get('/sales/create',[AdminController::class,'saleForm']);
+   Route::post('/sales',[\App\Http\Controllers\DirectSaleController::class,'store']);
+   Route::get('/reports',[AdminController::class,'reports']);
+   Route::get('/users',[UserController::class,'index']);
+   Route::post('/users',[UserController::class,'save']);
+   Route::put('/users/{user}',[UserController::class,'save']);
+  });
+  Route::middleware('role:owner')->group(function(){
+   Route::get('/expense-categories',[\App\Http\Controllers\ExpenseCategoryController::class,'index']);
+   Route::post('/expense-categories',[\App\Http\Controllers\ExpenseCategoryController::class,'store']);
+   Route::put('/expense-categories/{expenseCategory}',[\App\Http\Controllers\ExpenseCategoryController::class,'update']);
+
+   Route::get('/sale-items/{item}/cost',[\App\Http\Controllers\DirectSaleController::class,'costForm']);
+   Route::put('/sale-items/{item}/cost',[\App\Http\Controllers\DirectSaleController::class,'costSave']);
+   Route::get('/products/{product}/cost',[AdminController::class,'costForm']);
+   Route::put('/products/{product}/cost',[AdminController::class,'saveCost']);
+   Route::get('/suppliers',[PurchaseController::class,'suppliers']);
+   Route::post('/suppliers',[PurchaseController::class,'saveSupplier']);
+   Route::put('/suppliers/{supplier}',[PurchaseController::class,'saveSupplier']);
+   Route::delete('/suppliers/{supplier}',[PurchaseController::class,'deleteSupplier']);
+   Route::get('/settings',[AdminController::class,'settings']);
+   Route::put('/settings',[AdminController::class,'saveSettings']);
+  });
+ });
+});

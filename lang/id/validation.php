@@ -1,0 +1,22 @@
+<?php
+return [
+ 'required'=>':attribute wajib diisi.',
+ 'required_with'=>':attribute wajib diisi saat :values diisi.',
+ 'email'=>':attribute harus berupa alamat email yang valid.',
+ 'unique'=>':attribute sudah digunakan.',
+ 'confirmed'=>'Konfirmasi :attribute tidak cocok.',
+ 'integer'=>':attribute harus berupa bilangan bulat.',
+ 'string'=>':attribute harus berupa teks.',
+ 'min'=>['string'=>':attribute minimal :min karakter.','numeric'=>':attribute minimal :min.'],
+ 'max'=>['string'=>':attribute maksimal :max karakter.','numeric'=>':attribute maksimal :max.','file'=>':attribute maksimal :max KB.'],
+ 'in'=>'Pilihan :attribute tidak diizinkan.',
+ 'not_in'=>'Nilai :attribute tidak diizinkan.',
+ 'exists'=>'Pilihan :attribute tidak ditemukan.',
+ 'image'=>':attribute harus berupa gambar.',
+ 'mimes'=>'Format :attribute harus :values.',
+ 'uuid'=>':attribute tidak valid. Muat ulang halaman.',
+ 'current_password'=>'Kata sandi saat ini tidak sesuai.',
+ 'date_format'=>'Format :attribute harus :format.',
+ 'after_or_equal'=>':attribute harus sama atau sesudah :date.',
+ 'attributes'=>['name'=>'Nama','email'=>'Email','password'=>'Kata sandi','current_password'=>'Kata sandi saat ini','quantity'=>'Jumlah','price'=>'Harga jual','discount'=>'Diskon','image'=>'Gambar','category'=>'Kategori','role'=>'Peran','title'=>'Judul','body'=>'Isi berita','excerpt'=>'Ringkasan','phone'=>'Telepon','address'=>'Alamat','from'=>'Tanggal awal','to'=>'Tanggal akhir'],
+];

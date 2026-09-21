@@ -1,0 +1,9 @@
+@extends('layout')
+@section('title','Keranjang belanja')
+@section('content')
+<div class="page-heading"><div><span class="eyebrow">SELENGKAH LAGI</span><h1>Keranjang belanja</h1><p>Periksa pilihan Anda sebelum membuat pesanan.</p></div><a href="/products" class="text-link">Lanjut belanja →</a></div>
+@if($products->isEmpty())<div class="empty"><h2>Keranjang masih kosong</h2><p>Temukan pilihan pertama Anda.</p><a class="button" href="/products">Jelajahi produk</a></div>@else
+<div class="split-layout"><div class="panel">@foreach($products as $product)<div class="cart-item"><img src="{{ $product->image_url }}" alt=""><div><h3>{{ $product->name }}</h3><strong>@rupiah($product->sale_price)</strong><form class="inline-form" method="post" action="/cart/{{ $product->id }}">@csrf @method('PUT')<label>Jumlah<input name="quantity" type="number" value="{{ $cart[$product->id] }}" min="0" max="1000" required></label><button class="secondary">Ubah</button></form><small class="muted">Isi 0 untuk menghapus.</small></div><strong>@rupiah($product->sale_price*$cart[$product->id])</strong></div>@endforeach</div>
+<form action="/checkout" method="post" class="panel">@csrf<input type="hidden" name="checkout_token" value="{{ session('checkout_token') }}"><h2>Ringkasan pesanan</h2><div class="summary-line"><span>Total produk</span><strong>@rupiah($total)</strong></div><p class="muted">COD · Pengiriman gratis pada versi awal toko ini.</p><hr><label>Nama penerima<input name="customer_name" value="{{ old('customer_name',auth()->user()->name) }}" required maxlength="100"></label><label>Nomor telepon<input name="phone" type="tel" value="{{ old('phone') }}" required maxlength="30"></label><label>Alamat lengkap<textarea name="address" required maxlength="1000">{{ old('address') }}</textarea></label><button class="full">Buat pesanan COD →</button></form></div>@endif
+@endsection
+
