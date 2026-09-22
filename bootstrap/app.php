@@ -9,5 +9,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias(['role' => \App\Http\Middleware\RoleMiddleware::class]);
         $middleware->redirectGuestsTo('/login');
     })
-    ->withExceptions(function (Exceptions $exceptions): void {})
+    ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->report(function (\Throwable $e): void {
+            error_log(
+                'ORIGINAL_EXCEPTION: '.get_class($e).
+                ' | '.$e->getMessage().
+                ' | '.$e->getFile().':'.$e->getLine()
+            );
+        });
+    })
     ->create();
