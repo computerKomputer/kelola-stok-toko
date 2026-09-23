@@ -2,9 +2,22 @@
 
 header('Content-Type: application/json');
 
-echo json_encode([
+$result = [
     'php_version' => PHP_VERSION,
-    'pdo_mysql' => extension_loaded('pdo_mysql'),
-    'openssl' => extension_loaded('openssl'),
-    'storage_writable' => is_writable('/tmp'),
-], JSON_PRETTY_PRINT);
+    'autoload' => false,
+    'bootstrap' => false,
+    'error' => null,
+];
+
+try {
+    require __DIR__ . '/../vendor/autoload.php';
+    $result['autoload'] = true;
+
+    $app = require __DIR__ . '/../bootstrap/app.php';
+    $result['bootstrap'] = true;
+    $result['application_class'] = get_class($app);
+} catch (Throwable $e) {
+    $result['error'] = get_class($e) . ': ' . $e->getMessage();
+}
+
+echo json_encode($result, JSON_PRETTY_PRINT);
