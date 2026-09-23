@@ -6,8 +6,15 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 $basePath = dirname(__DIR__);
 
-// Gunakan direktori sementara yang dapat ditulis di Vercel.
+// Konfigurasi khusus ketika aplikasi berjalan di Vercel.
 if (getenv('VERCEL')) {
+
+    // Arahkan logging ke STDERR, bukan storage/logs/laravel.log.
+    $_ENV['LOG_CHANNEL'] = 'stderr';
+    $_SERVER['LOG_CHANNEL'] = 'stderr';
+    putenv('LOG_CHANNEL=stderr');
+
+    // Gunakan direktori sementara untuk cache Laravel.
     $cachePath = '/tmp/laravel-bootstrap-cache';
 
     if (!is_dir($cachePath)) {
@@ -35,7 +42,7 @@ return Application::configure(basePath: $basePath)
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
@@ -43,9 +50,9 @@ return Application::configure(basePath: $basePath)
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->report(function (\Throwable $e): void {
             error_log(
-                'ORIGINAL_EXCEPTION: ' . get_class($e) .
-                ' | ' . $e->getMessage() .
-                ' | ' . $e->getFile() . ':' . $e->getLine()
+                'ORIGINAL_EXCEPTION: ' . get_class($e)
+                . ' | ' . $e->getMessage()
+                . ' | ' . $e->getFile() . ':' . $e->getLine()
             );
         });
     })
