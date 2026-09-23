@@ -6,10 +6,10 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 $basePath = dirname(__DIR__);
 
-// Konfigurasi khusus ketika aplikasi berjalan di Vercel.
+// Konfigurasi khusus Vercel.
 if (getenv('VERCEL')) {
 
-    // Arahkan logging ke STDERR, bukan storage/logs/laravel.log.
+    // Arahkan logging ke STDERR.
     $_ENV['LOG_CHANNEL'] = 'stderr';
     $_SERVER['LOG_CHANNEL'] = 'stderr';
     putenv('LOG_CHANNEL=stderr');
@@ -48,12 +48,6 @@ return Application::configure(basePath: $basePath)
         $middleware->redirectGuestsTo('/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->report(function (\Throwable $e): void {
-            error_log(
-                'ORIGINAL_EXCEPTION: ' . get_class($e)
-                . ' | ' . $e->getMessage()
-                . ' | ' . $e->getFile() . ':' . $e->getLine()
-            );
-        });
+        //
     })
     ->create();
