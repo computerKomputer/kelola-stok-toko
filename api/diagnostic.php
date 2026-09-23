@@ -3,9 +3,9 @@
 header('Content-Type: application/json');
 
 $result = [
-    'php_version' => PHP_VERSION,
     'autoload' => false,
     'bootstrap' => false,
+    'http_kernel' => false,
     'error' => null,
 ];
 
@@ -15,7 +15,13 @@ try {
 
     $app = require __DIR__ . '/../bootstrap/app.php';
     $result['bootstrap'] = true;
-    $result['application_class'] = get_class($app);
+
+    $kernel = $app->make(
+        Illuminate\Contracts\Http\Kernel::class
+    );
+
+    $kernel->bootstrap();
+    $result['http_kernel'] = true;
 } catch (Throwable $e) {
     $result['error'] = get_class($e) . ': ' . $e->getMessage();
 }
