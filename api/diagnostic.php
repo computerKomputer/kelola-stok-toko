@@ -2,22 +2,34 @@
 
 header('Content-Type: application/json');
 
-$host = 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
-$port = 4000;
+$host = getenv('DB_HOST');
+$port = getenv('DB_PORT') ?: 4000;
+$database = getenv('DB_DATABASE');
+$username = getenv('DB_USERNAME');
+$password = getenv('DB_PASSWORD');
 
-$start = microtime(true);
-$socket = @fsockopen($host, $port, $errno, $errstr, 5);
+try {
+    $pdo = new PDO(
+        "mysql:host={$host};port={$port};dbname={$database}",
+        $username,
+        $password,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 5,
+            PDO::MYSQL_ATTR_SSL_CA => dirname(__DIR__) . '/isrgrootx1.pem',
+        ]
+    );
 
-$result = [
-    'host' => $host,
-    'port' => $port,
-    'connected' => $socket !== false,
-    'duration_seconds' => round(microtime(true) - $start, 2),
-    'error' => $socket ? null : $errstr,
-];
+    echo json_encode([
+        'connected' => true,
+        'database' => $pdo->query('SELECT DATABASE()')->fetchColumn(),
+    ], JSON_PRETTY_PRINT);
 
-if ($socket) {
-    fclose($socket);
+} catch (Throwable $e) {
+    echo json_encode([
+        'connected' => false,
+        'error_type' => get_class($e),
+        'error_code' => $e->getCode(),
+        'error_message' => $e->getMessage(),
+    ], JSON_PRETTY_PRINT);
 }
-
-echo json_encode($result, JSON_PRETTY_PRINT);
