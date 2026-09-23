@@ -2,28 +2,11 @@
 
 header('Content-Type: application/json');
 
-$result = [
-    'autoload' => false,
-    'bootstrap' => false,
-    'http_kernel' => false,
-    'error' => null,
-];
+$host = 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
 
-try {
-    require __DIR__ . '/../vendor/autoload.php';
-    $result['autoload'] = true;
-
-    $app = require __DIR__ . '/../bootstrap/app.php';
-    $result['bootstrap'] = true;
-
-    $kernel = $app->make(
-        Illuminate\Contracts\Http\Kernel::class
-    );
-
-    $kernel->bootstrap();
-    $result['http_kernel'] = true;
-} catch (Throwable $e) {
-    $result['error'] = get_class($e) . ': ' . $e->getMessage();
-}
-
-echo json_encode($result, JSON_PRETTY_PRINT);
+echo json_encode([
+    'php_version' => PHP_VERSION,
+    'host' => $host,
+    'resolved_ip' => gethostbyname($host),
+    'dns_records' => dns_get_record($host, DNS_A),
+], JSON_PRETTY_PRINT);
