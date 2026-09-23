@@ -3,10 +3,21 @@
 header('Content-Type: application/json');
 
 $host = 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
+$port = 4000;
 
-echo json_encode([
-    'php_version' => PHP_VERSION,
+$start = microtime(true);
+$socket = @fsockopen($host, $port, $errno, $errstr, 5);
+
+$result = [
     'host' => $host,
-    'resolved_ip' => gethostbyname($host),
-    'dns_records' => dns_get_record($host, DNS_A),
-], JSON_PRETTY_PRINT);
+    'port' => $port,
+    'connected' => $socket !== false,
+    'duration_seconds' => round(microtime(true) - $start, 2),
+    'error' => $socket ? null : $errstr,
+];
+
+if ($socket) {
+    fclose($socket);
+}
+
+echo json_encode($result, JSON_PRETTY_PRINT);
